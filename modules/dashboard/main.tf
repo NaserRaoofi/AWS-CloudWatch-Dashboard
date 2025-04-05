@@ -2,6 +2,7 @@ resource "aws_cloudwatch_dashboard" "main" {
   dashboard_name = "${var.environment}-${var.team_name}-${var.dashboard_name}"
   dashboard_body = jsonencode({
     widgets = flatten(concat(
+      # Service-specific widgets
       var.enable_ec2_monitoring ? module.ec2_widgets.widgets : [],
       var.enable_rds_monitoring ? module.rds_widgets.widgets : [],
       var.enable_s3_monitoring ? module.s3_widgets.widgets : [],
@@ -9,7 +10,29 @@ resource "aws_cloudwatch_dashboard" "main" {
       var.enable_elb_monitoring ? module.elb_widgets.widgets : [],
       var.enable_vpc_monitoring ? module.vpc_widgets.widgets : [],
       var.enable_alarms ? module.alarm_widgets.widgets : [],
-      var.enable_logs ? module.log_widgets.widgets : []
+      var.enable_logs ? module.log_widgets.widgets : [],
+      
+      # Advanced Analytics widgets
+      var.enable_advanced_analytics ? module.analytics_widgets.ec2_analytics_widgets : [],
+      var.enable_cost_analysis ? module.analytics_widgets.cost_analysis_widgets : [],
+      var.enable_dependency_analysis ? module.analytics_widgets.service_dependency_widgets : [],
+
+      # Dashboard Header
+      [
+        {
+          type = "text"
+          width = 24
+          height = 2
+          properties = {
+            markdown = <<-EOT
+              # ${title(var.environment)} Environment Dashboard
+              **Team:** ${var.team_name} | **Last Updated:** ${timestamp()} | **Environment:** ${var.environment}
+              
+              This dashboard provides comprehensive monitoring and analytics for AWS resources including advanced metrics, cost analysis, and performance scoring.
+            EOT
+          }
+        }
+      ]
     ))
   })
 }
@@ -68,4 +91,16 @@ module "log_widgets" {
   source = "./widgets/logs"
   aws_region = var.aws_region
   log_groups = var.log_groups
+}
+
+# Advanced Analytics Module
+module "analytics_widgets" {
+  source = "./widgets/analytics"
+  aws_region = var.aws_region
+  ec2_instances = var.ec2_instances
+  vpc_ids = var.vpc_ids
+  monthly_budget = var.monthly_budget
+  enable_anomaly_detection = var.enable_anomaly_detection
+  anomaly_detection_config = var.anomaly_detection_config
+  performance_thresholds = var.performance_thresholds
 } 

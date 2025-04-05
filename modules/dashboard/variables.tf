@@ -133,4 +133,60 @@ variable "log_groups" {
     limit  = number
   }))
   default = []
+}
+
+variable "enable_advanced_analytics" {
+  description = "Enable advanced analytics widgets"
+  type        = bool
+  default     = true
+}
+
+variable "enable_cost_analysis" {
+  description = "Enable cost analysis widgets"
+  type        = bool
+  default     = true
+}
+
+variable "enable_dependency_analysis" {
+  description = "Enable service dependency analysis widgets"
+  type        = bool
+  default     = true
+}
+
+variable "monthly_budget" {
+  description = "Monthly budget threshold for cost analysis"
+  type        = number
+  default     = 1000
+}
+
+variable "enable_anomaly_detection" {
+  description = "Enable anomaly detection for metrics"
+  type        = bool
+  default     = true
+}
+
+variable "anomaly_detection_config" {
+  description = "Configuration for anomaly detection"
+  type = object({
+    standard_deviation_threshold = number
+    evaluation_periods         = number
+  })
+  default = {
+    standard_deviation_threshold = 2
+    evaluation_periods         = 3
+  }
+}
+
+variable "performance_thresholds" {
+  description = "Thresholds for performance scoring"
+  type = object({
+    cpu_critical    = number
+    memory_critical = number
+    network_critical = number
+  })
+  default = {
+    cpu_critical    = 90
+    memory_critical = 85
+    network_critical = 80
+  }
 } 
